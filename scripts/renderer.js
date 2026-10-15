@@ -27,8 +27,70 @@ class Renderer {
                     transform: new Matrix(3, 3)
                 }
             ],
-            slide1: [],
-            slide2: [],
+            slide1: [
+                // Triangle Spinning slowly counterclockwise 
+                {
+                    vertices: this.circleVertices(60, 3),
+                    position: {x: 200, y: 300},
+                    spin: 0.5,
+                },
+
+                // Square Spinning at medium speed clockwise
+                {
+                    vertices: [
+                        CG.Vector3(-50, -50, 1),
+                        CG.Vector3( 50, -50, 1),
+                        CG.Vector3( 50,  50, 1),
+                        CG.Vector3(-50,  50, 1)
+                    ],
+                    position: {x: 400, y: 300},
+                    spin: -1,
+                    transform: new Matrix(3, 3)
+
+                },
+
+                // Hexagon Spinning Fast Counterclockwise
+                {
+                    vertices: this.circleVertices(60, 6),
+                    position: {x: 600, y: 300},
+                    spin: 2,
+                    transform: new Matrix(3, 3)
+                }
+
+            ],
+            slide2: [
+
+                // Square Growing and shrinking same size
+                {
+                    vertices: [
+                        CG.Vector3(-40, -40, 1),
+                        CG.Vector3( 40, -40, 1),
+                        CG.Vector3( 40,  40, 1),
+                        CG.Vector3(-40,  40, 1)
+                    ],
+                    position: {x: 250, y: 300},
+                    rate: {x: 0.5, y: 0.5},
+                    amount: {x: 0.5, y: 0.5},
+                    transform: new Matrix(3, 3)
+                },
+
+                // Pentagon growning and shrinking Not the same size
+                {
+                    vertices: [
+                        CG.Vector3(0, -50, 1),
+                        CG.Vector3( 50, -15, 1),
+                        CG.Vector3( 30,  40, 1),
+                        CG.Vector3(-30,  40, 1),
+                        CG.Vector3(-50,  -15, 1)
+                    ],
+                    
+                    position: {x: 550, y: 300},
+                    rate: {x: 1, y: 1},
+                    amount: {x: 0.5, y: 0.2},
+                    transform: new Matrix(3, 3)
+
+                }
+            ],
             slide3: [
                 // Sun: pulses (grows / shrinks) in the center of the canvas
                 {
@@ -155,7 +217,30 @@ class Renderer {
         }
         // Ball's vertices are centered at the origin, so just translate to its position
         CG.mat3x3Translate(ball.transform, ball.position.x, ball.position.y);
+
+        // --------- Slide 1: Spinning Polygons
+        for (let i = 0; i < this.models.slide1.length; i++) {
+            let polygon = this.models.slide1[i];
+            let angle = (2 * Math.PI * polygon.spin) * t;
+            let translate_polygon = new Matrix(3, 3);
+            CG.mat3x3Translate(translate_polygon, polygon.position.x, polygon.position.y);
+            let rotate_polygon = new Matrix(3, 3);
+            CG.mat3x3Rotate(rotate_polygon, angle);
+            polygon.transform = Matrix.multiply([translate_polygon, rotate_polygon]);
+        }
         
+        // ---------- Slide 2: Grow/Shrink
+
+        for (let i = 0; i < this.models.slide2.length; i++) {
+            let polygon = this.models.slide2[i];
+            let scale_x = 1.0 + polygon.amount.x * Math.sin(2 * Math.PI * polygon.rate.x * t);
+            let scale_y = 1.0 + polygon.amount.y * Math.sin(2 * Math.PI * polygon.rate.y * t);
+            let translate_polygon = new Matrix(3, 3);
+            CG.mat3x3Translate(translate_polygon, polygon.position.x, polygon.position.y);
+            let scale_polygon = new Matrix(3, 3);
+            CG.mat3x3Scale(scale_polygon, scale_x, scale_y);
+            polygon.transform = Matrix.multiply([translate_polygon, scale_polygon]);
+        }
 
         // ---------- Slide 3: sun, planet, and moon ----------
         // Time since start:  angle = angular velocity * t
@@ -224,6 +309,10 @@ class Renderer {
     drawSlide1() {
         // TODO: draw at least 3 polygons that spin about their own centers
         //   - have each polygon spin at a different speed / direction
+        this.drawModel(this.models.slide1[0], [220, 5, 45, 200]);  
+        this.drawModel(this.models.slide1[1], [0, 102, 178, 200]);
+        this.drawModel(this.models.slide1[2], [255, 215, 0, 200]);
+
         
         
     }
@@ -233,7 +322,8 @@ class Renderer {
         // TODO: draw at least 2 polygons grow and shrink about their own centers
         //   - have each polygon grow / shrink different sizes
         //   - try at least 1 polygon that grows / shrinks non-uniformly in the x and y directions
-
+       this.drawModel(this.models.slide2[0], [219, 0, 7, 200]);  
+        this.drawModel(this.models.slide2[1], [2, 52, 116, 200]);
 
     }
 
